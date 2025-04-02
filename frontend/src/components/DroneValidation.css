@@ -1,0 +1,84 @@
+/* ================================
+   DroneValidation.css
+   ================================ */
+
+/* Container for the validation section */
+.drone-validation {
+    width: 80%;
+    max-width: 700px; /* Adjust as needed for your layout */
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px; /* Slightly larger rounding for a modern look */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  
+  /* Section title */
+  .drone-validation h2 {
+    margin-bottom: 15px;
+    text-align: center;
+    color: #333;
+    font-size: 1.5rem;
+  }
+  
+  /* Container wrapping the table and status text */
+  .validation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* The table itself */
+  .validation-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  /* Table rows and cells */
+  .validation-table th,
+  .validation-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    font-size: 1rem;
+    text-align: left;
+  }
+  
+  /* Header cells */
+  .validation-table th {
+    background-color: #f4f4f4;
+    font-weight: 600;
+    width: 50%; /* Force columns to be 50/50 in this example */
+  }
+  
+  /* Color-code the unauthorized row (example) */
+  .unauthorized-row th,
+  .unauthorized-row td {
+    color: red;
+    font-weight: bold;
+  }
+  
+  /* Validation status text */
+  .validation-status {
+    margin-top: 15px;
+    font-size: 1.1rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .drone-validation {
+      width: 95%;
+      padding: 15px;
+    }
+  
+    .validation-table th,
+    .validation-table td {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  
+    .validation-table th {
+      width: 40%; /* Adjust for smaller screens */
+    }
+  }
+  
