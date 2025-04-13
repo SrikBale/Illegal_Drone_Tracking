@@ -42,7 +42,7 @@ const App = () => {
         let realDrones = data.drones || [];
         // Check how many drones are flagged unauthorized
         const unauthorizedCount = realDrones.filter((d) => d.unauthorized).length;
-        // If none are unauthorized, generate 5 random unauthorized drones
+        // If none are unauthorized, generate 5 random unauthorized drone
         if (unauthorizedCount === 0) {
           const randomUnauthorized = generateRandomDrones(5, true);
           realDrones = realDrones.concat(randomUnauthorized);
