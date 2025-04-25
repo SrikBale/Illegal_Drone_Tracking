@@ -1,206 +1,563 @@
-/* 🏠 Global Page Centering */
-body {
-    font-family: "Poppins", Arial, sans-serif;
-    background-color: #f4f4f4;
+/* src/DroneMap.css - Enhanced for 3D Style */
+
+/* Inherited from original + new styles */
+body { /* Move general body styles to App.css or index.css */
+    font-family: "Orbitron", Arial, sans-serif;
+    background-color: var(--dark-navy);
+    color: var(--text-primary);
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-/* 📌 Container for Full Page */
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    max-width: 1200px;
-    width: 100%;
-}
-
-/* Drone Dashboard Container */
 .drone-dashboard {
-    width: 100%;
-    padding: 20px;
+  /* This container might wrap everything in DroneMap.js */
+  width: 100%;
+  position: relative; /* For absolute positioning of elements inside if needed */
 }
 
-/* 🚀 Navigation Bar */
-.navbar {
-    width: 100%;
-    background: #1e293b;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 40px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
+/* Map Section Layout */
 
-.logo {
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.nav-links {
-    display: flex;
-    gap: 15px;
-}
-
-.nav-button {
-    background: #3b82f6;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.nav-button:hover {
-    background: #2563eb;
-}
-
-/* 🏷️ Header */
-.header {
-    font-size: 28px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-/* 🗺️ Full-Width Map */
 .map-container {
-    width: 95%;
-    height: 600px;
-    max-width: 1400px;
-    margin: 20px auto;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  flex: 1 1 70%; /* Map takes more space */
+  min-width: 400px; /* Minimum width for map */
+  height: 600px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-blue);
+  border: 1px solid var(--border-color);
+  position: relative; /* Needed for marker pulse pseudo-elements if used */
 }
 
-/* 📊 Statistics Panel */
-.stats-panel {
-    width: 85%;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
+.map-container .leaflet-container {
+  background: #051122; /* Darker background for map tiles */
+  border-radius: 15px;
+}
+
+/* Legend Styling */
+
+.legend-box-outside:hover {
+  border-color: rgba(0, 255, 224, 0.4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5),
+              0 0 15px var(--glow-blue),
+              inset 0 0 15px rgba(0, 255, 224, 0.1);
+}
+
+.legend-box-outside h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: var(--neon-blue);
+  text-shadow: 0 0 4px var(--glow-blue);
+  text-align: center;
+}
+
+.legend-box-outside ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 10px 0 0 0;
+}
+
+.legend-box-outside li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.legend-indicator { /* Replaces .legend-color */
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-right: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  position: relative; /* For potential inner glow */
+  box-shadow: 0 0 8px var(--glow-color, var(--glow-blue)); /* Default glow */
+}
+
+/* Specific legend colors and glows */
+.legend-indicator.airport {
+  background-color: #007bff; /* Blue */
+  --glow-color: rgba(0, 123, 255, 0.7);
+  box-shadow: 0 0 8px var(--glow-color);
+}
+.legend-indicator.government {
+  background-color: #ff9800; /* Orange */
+   --glow-color: rgba(255, 152, 0, 0.7);
+   box-shadow: 0 0 8px var(--glow-color);
+}
+.legend-indicator.military {
+  background-color: #6c757d; /* Gray */
+   --glow-color: rgba(108, 117, 125, 0.7);
+   box-shadow: 0 0 8px var(--glow-color);
+}
+
+/* Marker Pulse Effect */
+.leaflet-marker-icon {
+  transition: transform 0.2s ease-out; /* Smooth icon scaling */
+}
+
+.pulsing-marker::before { /* Apply to marker icon's container or use L.divIcon */
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px; /* Adjust size */
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--marker-pulse-color, var(--glow-red)); /* Default red pulse */
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0.6;
+  animation: pulse-marker-anim 2s infinite ease-out;
+  z-index: -1; /* Behind the actual marker icon */
+}
+
+@keyframes pulse-marker-anim {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.6;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Differentiate pulse color */
+.authorized-marker-pulse::before {
+  --marker-pulse-color: var(--glow-blue);
+}
+.unauthorized-marker-pulse::before {
+  --marker-pulse-color: var(--glow-red);
+}
+
+
+/* Modal Styling - Holographic */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(12, 15, 26, 0.8); /* Dark navy overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Below potential map controls */
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: rgba(30, 41, 59, 0.85); /* Slightly transparent panel */
+  color: var(--text-primary);
+  padding: 25px 30px;
+  border-radius: 15px;
+  width: 80%;
+  max-width: 800px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px var(--glow-blue),
+              inset 0 0 20px rgba(0, 255, 224, 0.1);
+  border: 1px solid var(--border-color);
+  position: relative;
+  backdrop-filter: blur(var(--glass-blur));
+  /* Optional holographic grid */
+  background-image: linear-gradient(rgba(0, 255, 224, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 255, 224, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--neon-blue);
+  transition: all 0.2s ease;
+  text-shadow: 0 0 5px var(--glow-blue);
+}
+
+.close-button:hover {
+  color: white;
+  transform: scale(1.1);
+}
+
+.modal-content h2 {
+  text-align: center;
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px var(--glow-blue);
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.8rem;
+}
+
+.modal-content p { /* Last updated */
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.modal-content .stats-container { /* Reuse stats card styles if needed */
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.modal-content .stats-card {
+  background: rgba(0, 255, 224, 0.05);
+  color: var(--text-primary);
+  padding: 15px;
+  border-radius: 10px;
+  flex: 1; /* Distribute space */
+  min-width: 150px;
+  text-align: center;
+  font-size: 1rem;
+  border: 1px solid rgba(0, 255, 224, 0.15);
+}
+.modal-content .stats-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+.modal-content .stats-card p { /* The value */
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--neon-blue);
+}
+
+
+.modal-content .stats-card.unauthorized p { /* Style unauthorized value */
+  color: var(--neon-red);
+  text-shadow: 0 0 5px var(--glow-red);
+}
+
+.modal-content ul { /* Drone list */
+  list-style: none;
+  padding: 0;
+  max-height: 40vh; /* Make list scrollable if long */
+  overflow-y: auto;
+  margin-top: 10px;
+  /* Custom scrollbar (optional) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-blue) transparent;
+}
+
+.modal-content li {
+  padding: 10px 5px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background-color 0.2s ease;
+}
+.modal-content li:hover {
+  background-color: rgba(0, 255, 224, 0.05);
+}
+
+.modal-content li:last-child {
+  border-bottom: none;
+}
+
+.modal-content .authorized-drone {
+  color: var(--text-primary); /* Standard text for authorized */
+}
+.modal-content .authorized-drone strong {
+  color: var(--neon-blue); /* Highlight callsign */
+}
+
+.modal-content .unauthorized-drone {
+  color: #ffacb1; /* Lighter red for readability */
+  font-weight: 500; /* Slightly bolder */
+}
+.modal-content .unauthorized-drone strong {
+  color: var(--neon-red); /* Highlight callsign */
+  font-weight: 700;
+}
+
+/* Responsive Tuning */
+@media (max-width: 1024px) {
+  .map-container {
+    height: 500px;
+  }
+}
+@media (max-width: 768px) {
+  .map-section-wrapper {
+      flex-direction: column;
+  }
+  .map-container {
+      height: 400px;
+      min-width: 100%;
+      flex-basis: auto; /* Reset flex basis */
+  }
+  .legend-box-outside {
+      flex-basis: auto; /* Reset flex basis */
+      width: 100%; /* Full width when stacked */
+      margin-top: 15px;
+  }
+  .modal-content {
+      width: 95%;
+      padding: 20px;
+  }
+  .modal-content h2 {
+      font-size: 1.5rem;
+  }
+}
+/* Style the custom divIcon wrapper */
+.custom-leaflet-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.marker-wrapper {
+  position: relative;
+  width: 30px; /* Match iconSize */
+  height: 40px; /* Match iconSize */
+}
+
+.marker-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ensure icon scales nicely */
+}
+
+/* Pulse effect using ::before pseudo-element */
+.pulsing-marker-effect::before {
+  content: '';
+  position: absolute;
+  /* Center the pulse behind the anchor point */
+  left: 50%; /* Center horizontally */
+  bottom: 0px; /* Anchor at the bottom */
+  transform: translateX(-50%); /* Correct horizontal centering */
+  width: 40px; /* Size of the pulse */
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--neon-red); /* Red pulse for unauthorized */
+  box-shadow: 0 0 15px var(--glow-red);
+  opacity: 0.6;
+  animation: pulse-marker-anim 2s infinite ease-out;
+  z-index: -1; /* Place behind the marker image */
+}
+
+@keyframes pulse-marker-anim {
+  0% {
+    transform: translateX(-50%) scale(0.8);
+    opacity: 0.6;
+  }
+  70% {
+    transform: translateX(-50%) scale(2); /* Larger pulse */
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Style the map navbar specifically if needed */
+.map-navbar {
+    display: flex; /* Keep flex for alignment */
+    justify-content: space-between; /* Keep alignment */
+    align-items: center; /* Keep alignment */
+    padding: 10px 0; /* Adjust padding - maybe remove horizontal padding? */
+    margin-bottom: 15px;
+  
+    /* === REMOVE BACKGROUND AND BORDERS === */
+    background: transparent; /* Make background invisible */
+    backdrop-filter: none;   /* Remove blur effect if it was there */
+    border-radius: 0;      /* Remove rounded corners if any */
+    box-shadow: none;        /* Remove shadow */
+    border: none;            /* Remove border */
+  }
+  
+  /* Ensure title and button still look good */
+  .map-navbar .map-section-title {
+    /* Make sure the neon-title class provides enough visibility */
+    margin-bottom: 0; /* Remove margin if navbar height shrinks */
+  }
+  
+  .map-navbar .action-button {
+    /* The button styles defined in App.css should still apply */
+    /* Add specific overrides here only if needed */
+     /* Example: ensure it has enough visual weight without a navbar background */
+     /* Maybe add a slightly stronger default shadow? */
+     /* box-shadow: inset 0 0 8px rgba(0, 255, 224, 0.3), 0 0 8px rgba(0, 255, 224, 0.4); */
+  }
+/* Style titles specifically within map section/modal */
+.map-section-title, .legend-title, .modal-title {
+    margin-bottom: 15px; /* Consistent spacing */
+}
+
+.modal-last-updated {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
     text-align: center;
-    margin-top: 20px;
-}
-
-.stats-title {
-    font-size: 20px;
-    font-weight: bold;
     margin-bottom: 15px;
 }
 
-/* 📈 Stats Container */
-.stats-container {
+.modal-stats {
+    margin-bottom: 20px;
+}
+
+.modal-drone-list {
+   /* Styles for the list in the modal */
+   max-height: 45vh; /* Control height */
+   overflow-y: auto;
+   list-style: none;
+   padding: 0 5px; /* Slight padding */
+   margin: 0;
+   border-top: 1px solid var(--border-color); /* Separator */
+   padding-top: 10px;
+}
+
+.modal-drone-list li {
+    padding: 8px 5px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-/* 📊 Individual Stat Cards */
-.stats-card {
-    background: #1e293b;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    width: 200px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-/* ⚠️ Highlight Unauthorized Drones in Stats */
-.unauthorized {
-    background: #dc2626;
-    color: white;
-}
-
-/* 📡 Live Drone Updates Section */
-.drone-updates {
-    width: 85%;
-    margin-top: 20px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Modal Styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* dark overlay */
-    display: flex;
-    justify-content: center;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 5px 10px; /* Spacing between parts */
     align-items: center;
-    z-index: 9999; /* ensure on top */
-  }
-  
-  .modal-content {
-    position: relative;
-    background: #fff;
+}
+.modal-drone-list li:last-child {
+    border-bottom: none;
+}
+
+.modal-drone-list .no-drones-message {
+    text-align: center;
+    color: var(--text-secondary);
     padding: 20px;
+}
+
+.modal-drone-list .unauthorized-drone {
+    color: #ffacb1; /* Lighter red */
+}
+.modal-drone-list .unauthorized-drone strong {
+     color: var(--neon-red);
+}
+.modal-drone-list .authorized-drone strong {
+     color: var(--neon-blue);
+}
+
+/* Legend adjustments */
+.legend-indicator.other {
+    background-color: purple;
+    --glow-color: rgba(128, 0, 128, 0.7);
+    box-shadow: 0 0 8px var(--glow-color);
+}
+.legend-box-horizontal {
+    width: 100%; /* Take full width */
+    padding: 10px 15px; /* Adjust padding */
+    margin-bottom: 15px; /* Space below legend, above map */
+    background: rgba(255, 255, 255, 0.65); /* Background for light theme */
+    backdrop-filter: blur(4px);
     border-radius: 8px;
-    width: 600px;       /* or any width you want */
-    max-width: 90%;     /* responsive limit */
-    max-height: 80vh;   /* limit vertical size to 80% of viewport */
-    overflow-y: auto;   /* enable scrolling if content is too tall */
-    box-sizing: border-box;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
+    /* Add theme variables if using them */
+    /* background: var(--panel-bg); */
+    /* border: 1px solid var(--border-color); */
   }
   
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
+  .legend-box-horizontal ul {
+    display: flex; /* Arrange items horizontally */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    justify-content: center; /* Center items horizontally */
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 15px 25px; /* Row gap, Column gap */
   }
   
-
-/* Drone List Styling in Modal */
-.authorized-drone {
-    color: green;
-}
-
-.unauthorized-drone {
-    color: red;
-    font-weight: bold;
-}
-
-/* 📌 Responsive Adjustments */
-@media (max-width: 1024px) {
-    .map-container,
-    .stats-panel,
-    .drone-updates {
-        width: 95%;
-    }
-    .stats-panel {
-        text-align: center;
-    }
-}
-
-/* Live Detections Panel Animation */
-.live-detections-panel {
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+  .legend-box-horizontal li {
+    display: flex; /* Align indicator and text */
+    align-items: center;
+    font-size: 0.9rem;
+    color: #333; /* Text color for light theme */
+    /* color: var(--text-secondary); /* Use theme variable if available */
+  }
+  
+  /* Styles for legend indicator dots (can remain mostly the same) */
+  .legend-indicator {
+    display: inline-block;
+    width: 16px; /* Adjust size */
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 8px; /* Space between indicator and text */
+    border: 1px solid rgba(0,0,0,0.2); /* Border for light theme */
+  }
+  /* Specific colors are set inline in the JSX now, but you could keep classes */
+  .legend-indicator.airport { background-color: #3388ff; }
+  .legend-indicator.government { background-color: #ff8c00; }
+  .legend-indicator.military { background-color: #555555; }
+  .legend-indicator.other { background-color: #800080; }
+  /* --- END styles for Horizontal Legend --- */
+  
+  
+  /* --- Map Container Styles --- */
+  .map-container {
+    /* Ensure it takes full width within its parent grid cell */
+    width: 100%;
+    height: 600px; /* Maintain height */
+    border-radius: 12px; /* Keep rounded corners */
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Shadow for light theme */
+    border: 1px solid #ddd; /* Border for light theme */
+    /* Add theme variables if using them */
+    /* border: 1px solid var(--border-color); */
+    /* box-shadow: 0 6px 20px rgba(0, 255, 224, 0.15); */
+  }
+  /* Ensure leaflet container itself doesn't have conflicting background */
+  .map-container .leaflet-container {
+     background: #ffffff; /* Or whatever your map tile background is */
+     border-radius: 12px; /* Match parent */
+  }
+  
+  
+  /* --- Marker Styles (Keep from previous) --- */
+  .custom-leaflet-div-icon { background: transparent; border: none; }
+  .marker-wrapper { position: relative; width: 32px; height: 44px; }
+  .marker-icon-img { width: 100%; height: 100%; object-fit: contain; }
+  .pulsing-marker-effect::before { /* Pulse animation */
+    content: ''; position: absolute; left: 50%; bottom: 0px; transform: translateX(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background-color: var(--neon-red, #dc3545); /* Use variable or fallback */
+    box-shadow: 0 0 15px var(--glow-red, rgba(220, 53, 69, 0.5));
+    opacity: 0.6; animation: pulse-marker-anim 2s infinite ease-out; z-index: -1;
+  }
+  @keyframes pulse-marker-anim { /* Keep animation */
+    0% { transform: translateX(-50%) scale(0.8); opacity: 0.6; }
+    70% { transform: translateX(-50%) scale(2); opacity: 0; }
+    100% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+  }
+  
+  
+  /* --- Map Navbar Styles (Keep adjustments for light mode) --- */
+  .map-navbar {
+    padding: 10px 20px; margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(5px);
+    border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  /* Adjust navbar title/button colors if needed for contrast */
+  /* .map-navbar .neon-title { color: #0056b3; text-shadow: none; } */
+  /* .map-navbar .action-button { border-color: #007bff; color: #007bff; background: rgba(0, 123, 255, 0.05); } */
+  
+  
+  /* --- Modal Styles (Keep adjustments for light mode) --- */
+  .modal-last-updated { color: #555; }
+  .modal-drone-list { border-top: 1px solid #eee; }
+  .modal-drone-list li { border-bottom: 1px solid #f0f0f0; }
+  .modal-drone-list .no-drones-message { color: #777; }
+  .modal-drone-list .unauthorized-drone { color: #dc3545; }
+  .modal-drone-list .unauthorized-drone strong { color: #b02a37; font-weight: bold; }
+  .modal-drone-list .authorized-drone strong { color: #0069d9; font-weight: bold; }

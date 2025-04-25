@@ -1,0 +1,115 @@
+/* src/StatsPanel.css */
+.stats-panel {
+    background: var(--panel-bg);
+    padding: 20px 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4),
+                inset 0 0 15px rgba(0, 255, 224, 0.1);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    position: relative; /* For potential pseudo-elements or absolute positioning inside */
+    overflow: hidden; /* Keep glow contained */
+  }
+  
+  .stats-panel:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5),
+                0 0 25px var(--glow-blue),
+                inset 0 0 20px rgba(0, 255, 224, 0.15);
+    border-color: rgba(0, 255, 224, 0.4);
+  }
+  
+  
+  .stats-panel h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: var(--neon-blue);
+    text-shadow: 0 0 6px var(--glow-blue);
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+  }
+  
+  .stats-panel p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .stats-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .stats-panel li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .stats-panel li:last-child {
+    border-bottom: none;
+  }
+  
+  .stats-panel li strong {
+    color: var(--text-primary);
+    font-weight: 400; /* Orbitron bold is very bold, maybe reduce */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+  }
+  
+  .stats-panel li span.value { /* Add a span for the value if needed for styling */
+    font-weight: 700;
+    color: var(--neon-blue);
+  }
+  
+  /* Highlight unauthorized count */
+  .stats-panel li.unauthorized-stat span.value {
+    color: var(--neon-red);
+    text-shadow: 0 0 5px var(--glow-red);
+  }
+  
+  /* --- Threat Level Badge --- */
+  .threat-level {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 15px;
+    display: inline-block; /* Center if needed */
+    text-align: center;
+    width: fit-content; /* Adjust width */
+    margin-left: auto; /* Push to right if in flex container */
+    margin-right: auto;
+  }
+  
+  .threat-low {
+    background-color: rgba(0, 255, 153, 0.2); /* Greenish */
+    color: #00ff99;
+    border: 1px solid #00ff99;
+    box-shadow: 0 0 8px rgba(0, 255, 153, 0.5);
+  }
+  
+  .threat-medium {
+    background-color: rgba(255, 193, 7, 0.2); /* Yellowish */
+    color: #ffc107;
+    border: 1px solid #ffc107;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
+  }
+  
+  .threat-high {
+    background-color: rgba(255, 75, 92, 0.2); /* Reddish */
+    color: var(--neon-red);
+    border: 1px solid var(--neon-red);
+    box-shadow: 0 0 8px var(--glow-red);
+  }

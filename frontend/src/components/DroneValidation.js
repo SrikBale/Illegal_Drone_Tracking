@@ -1,31 +1,25 @@
 import React, { useMemo } from "react";
-import "./DroneValidation.css"; // <-- Import your new CSS file
+import "./DroneValidation.css";
 
 const DroneValidation = ({ droneData }) => {
-  // Compute validation results using useMemo
   const validationResult = useMemo(() => {
     const total_drones = droneData.length;
     const authorized = droneData.filter((drone) => !drone.unauthorized).length;
     const unauthorized = droneData.filter((drone) => drone.unauthorized).length;
-    const unknown = 0; // or compute if needed
-
+    const unknown = 0;
     const validation_passed = authorized + unauthorized === total_drones;
     return { total_drones, authorized, unauthorized, unknown, validation_passed };
   }, [droneData]);
 
   return (
     <div className="drone-validation">
-      <h2>📊 Drone Data Validation</h2>
+      <h2 className="validation-heading neon-title">📊 Drone Data Validation</h2>
       {droneData.length === 0 ? (
-        <p>No drone data available for validation.</p>
+        <p className="no-data">No drone data available for validation.</p>
       ) : (
         <div className="validation-container">
           <table className="validation-table">
             <tbody>
-              {/* 
-                Add the .unauthorized-row class to highlight the Unauthorized row in red.
-                If you only want color when the unauthorized count is > 0, add conditional logic.
-              */}
               <tr>
                 <th>Total Drones</th>
                 <td>{validationResult.total_drones}</td>
@@ -38,7 +32,6 @@ const DroneValidation = ({ droneData }) => {
                 <th>Unauthorized</th>
                 <td>{validationResult.unauthorized}</td>
               </tr>
-
               <tr>
                 <th>Unknown</th>
                 <td>{validationResult.unknown}</td>
@@ -46,16 +39,9 @@ const DroneValidation = ({ droneData }) => {
             </tbody>
           </table>
 
-          <p
-            className="validation-status"
-            style={{
-              color: validationResult.validation_passed ? "green" : "red",
-            }}
-          >
-            {validationResult.validation_passed
-              ? "✔ Validation Passed"
-              : "❌ Validation Failed"}
-          </p>
+          <div className={`validation-status ${validationResult.validation_passed ? "passed" : "failed"}`}>
+            {validationResult.validation_passed ? "✔ Validation Passed" : "❌ Validation Failed"}
+          </div>
         </div>
       )}
     </div>
