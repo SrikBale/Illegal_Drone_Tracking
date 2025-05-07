@@ -4,221 +4,251 @@ import React, { useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "./DroneMap.css"; // Ensure this CSS file has all the necessary styles applied
+import "./DroneMap.css"; // Ensure this CSS file has necessary styles
 import { FaEye, FaClock, FaTimes } from "react-icons/fa";
 
-// Import marker assets (verify paths are correct relative to this file)
+// Import marker assets (verify paths based on your project structure)
+// Assumes DroneMap.js is in src/components/ and assets are in src/assets/
 import redMarkerIconUrl from "../assets/red_marker.png";
 import greenMarkerIconUrl from "../assets/green_marker.png";
 
-// --- DroneMap Component ---
-// Accepts the filtered drone data (subset for display) as droneData prop
-const DroneMap = ({ droneData, restrictedZones, lastUpdated }) => {
-  const [showLiveDetections, setShowLiveDetections] = useState(false);
-
-  // --- Event Handlers ---
-  const handleToggleDetections = () => setShowLiveDetections(true);
-  const handleCloseModal = () => setShowLiveDetections(false);
-
-  // --- Helper Functions ---
-  const zoneColors = {
+// --- Zone Color Definitions ---
+const zoneColors = {
     airport: "#3388ff",    // Blue
     government: "#ff8c00", // Orange
     military: "#555555",    // Gray
     other: "#800080"       // Purple
-  };
+};
 
-  const getZoneType = (zoneName = "") => {
+// --- Helper Function: Get Zone Type ---
+const getZoneType = (zoneName = "") => {
     const lowerName = zoneName.toLowerCase();
     if (lowerName.includes("airport")) return "airport";
     if (lowerName.includes("base") || lowerName.includes("fort") || lowerName.includes("military") || lowerName.includes("complex")) return "military";
     if (lowerName.includes("white house") || lowerName.includes("pentagon") || lowerName.includes("government") || lowerName.includes("national lab")) return "government";
-    return "other"; // Includes Area 51, Groom Lake etc. as 'other'
-  };
+    return "other"; // Default type
+};
 
-  // --- UPDATED: Define custom Leaflet icons using L.divIcon for easier CSS styling ---
-  const getMarkerIcon = (drone) => {
+// --- Helper Function: Get Custom Marker Icon ---
+// Uses L.divIcon to allow for CSS pulsing effects on the wrapper div
+const getMarkerIcon = (drone) => {
+    // Determine icon URL and CSS classes based on authorization status
     const iconUrl = drone.unauthorized ? redMarkerIconUrl : greenMarkerIconUrl;
-    const baseIconClass = 'custom-leaflet-div-icon';
-    const statusIconClass = drone.unauthorized ? 'unauthorized-drone-marker' : 'authorized-drone-marker';
-    const pulseClass = drone.unauthorized ? 'pulsing-marker-effect' : ''; // CSS class for pulsing
+    const baseIconClass = 'custom-leaflet-div-icon'; // Base class for common styling
+    const statusIconClass = drone.unauthorized ? 'unauthorized-drone-marker' : 'authorized-drone-marker'; // Status-specific class
+    const pulseClass = drone.unauthorized ? 'pulsing-marker-effect' : ''; // Add pulsing class only for unauthorized
 
     return L.divIcon({
-      // Embed an img inside a div. Style the div with pulse, reference img for content.
-      html: `<div class="marker-wrapper ${pulseClass}">
-               <img src="${iconUrl}" alt="${drone.unauthorized ? 'unauthorized' : 'authorized'} drone marker" class="marker-icon-img" />
-             </div>`,
-      className: `${baseIconClass} ${statusIconClass}`, // Apply multiple classes
-      iconSize: [32, 44],   // Size of the overall icon div
-      iconAnchor: [16, 44],  // Point of the icon which corresponds to marker's location (bottom center)
-      popupAnchor: [0, -40] // Point from which the popup should open relative to the iconAnchor
+        // The HTML includes a wrapper div for pulsing and an img tag for the actual icon
+        html: `<div class="marker-wrapper ${pulseClass}">
+                 <img src="${iconUrl}" alt="${drone.unauthorized ? 'unauthorized' : 'authorized'} drone marker" class="marker-icon-img" />
+               </div>`,
+        className: `${baseIconClass} ${statusIconClass}`, // Combine base and status classes for the main divIcon element
+        iconSize: [32, 44],   // Overall size of the icon div (adjust as needed)
+        iconAnchor: [16, 44],  // Point of the icon which corresponds to marker's location (bottom center)
+        popupAnchor: [0, -40] // Point from which the popup should open relative to the iconAnchor
     });
-  };
+};
 
 
-  // --- Memoized Calculations for Modal Stats (Based on the FILTERED droneData) ---
-  const modalStats = useMemo(() => {
-     // droneData here IS the filtered list passed from App.js
-     const totalDisplayed = droneData?.length || 0;
-     const unauthorizedDisplayed = droneData?.filter(d => d.unauthorized).length || 0;
-     // Note: These stats only reflect the drones currently shown on the map.
-     // If you need stats for ALL drones, `allDroneData` needs to be passed separately.
-     return { totalDisplayed, unauthorizedDisplayed };
-  }, [droneData]);
+// --- DroneMap Component ---
+const DroneMap = ({ droneData, restrictedZones, lastUpdated }) => {
+    // State for controlling the visibility of the "Live Detections" modal
+    const [showLiveDetections, setShowLiveDetections] = useState(false);
 
+    // --- Event Handlers ---
+    const handleToggleDetections = () => setShowLiveDetections(true);
+    const handleCloseModal = () => setShowLiveDetections(false);
 
-  // --- Render Logic ---
-  return (
-    <div className="drone-dashboard map-section-container">
+    // --- Memoized Calculation for Modal Statistics ---
+    // Calculates stats based *only* on the `droneData` currently passed to this component
+    // This usually means the filtered data shown on the map.
+    const modalStats = useMemo(() => {
+        const totalDisplayed = droneData?.length || 0;
+        const unauthorizedDisplayed = droneData?.filter(d => d && d.unauthorized).length || 0;
+        // To show stats for *all* drones (not just filtered), the parent component (`App.js`)
+        // would need to pass the complete, unfiltered drone list separately.
+        return { totalDisplayed, unauthorizedDisplayed };
+    }, [droneData]); // Recalculate only when droneData changes
 
-      {/* Navbar specific to the map section */}
-      <nav className="navbar map-navbar">
-        <div className="navbar-brand">
-          <h2 className="neon-title map-section-title">🚁 Illegal Drone Tracking System</h2>
-        </div>
-        <div className="navbar-right">
-          <button className="action-button" onClick={handleToggleDetections}>
-            <FaEye /> Live Detections ({modalStats.totalDisplayed}) {/* Show count on button */}
-          </button>
-        </div>
-      </nav>
+    // --- Debugging Log ---
+    // Add this log to check the data received by the component
+    // console.log("DroneMap received droneData:", JSON.stringify(droneData, null, 2));
 
-      {/* Horizontal Legend Section */}
-      <div className="legend-box-horizontal">
-         <ul>
-             {/* Map over zoneColors for dynamic legend */}
-             {Object.entries(zoneColors).map(([type, color]) => (
-                 <li key={type}>
-                     <span className={`legend-indicator ${type}`} style={{ backgroundColor: color }}></span>
-                     {/* Capitalize type for display */}
-                     {type.charAt(0).toUpperCase() + type.slice(1)} Area
-                 </li>
-             ))}
-         </ul>
-      </div>
+    // --- Render Logic ---
+    return (
+        <div className="drone-dashboard map-section-container">
 
+            {/* Navbar specific to the map section */}
+            <nav className="navbar map-navbar">
+                <div className="navbar-brand">
+                    <h2 className="neon-title map-section-title">🚁 Illegal Drone Tracking System</h2>
+                </div>
+                <div className="navbar-right">
+                    {/* Button to open the Live Detections modal */}
+                    <button className="action-button" onClick={handleToggleDetections}>
+                        <FaEye /> Live Detections ({modalStats.totalDisplayed})
+                    </button>
+                </div>
+            </nav>
 
-      {/* Map Container Section */}
-      <div className="map-container">
-        <MapContainer
-            center={[39.8283, -98.5795]} // Centered on continental US
-            zoom={4} // Adjust initial zoom as needed
-            style={{ height: "100%", width: "100%" }}
-            scrollWheelZoom={true}
-          >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            maxZoom={18} // Slightly lower maxZoom can improve performance if needed
-          />
+            {/* Horizontal Legend for Zone Types */}
+            <div className="legend-box-horizontal">
+                 <ul>
+                    {/* Dynamically generate legend items from zoneColors */}
+                    {Object.entries(zoneColors).map(([type, color]) => (
+                         <li key={type}>
+                             <span className={`legend-indicator ${type}`} style={{ backgroundColor: color }}></span>
+                             {/* Capitalize the zone type for display */}
+                             {type.charAt(0).toUpperCase() + type.slice(1)} Area
+                         </li>
+                    ))}
+                 </ul>
+            </div>
 
-          {/* Render Restricted Zone Circles */}
-          {restrictedZones && restrictedZones.map((zone, index) => {
-              if (!zone || typeof zone.latitude !== 'number' || typeof zone.longitude !== 'number' || typeof zone.radius !== 'number') {
-                  console.warn("Skipping invalid restricted zone object:", zone);
-                  return null;
-              }
-              const zoneType = getZoneType(zone.name);
-              const zoneColor = zoneColors[zoneType];
-              // Using actual radius in meters for Circle (Leaflet standard)
-              const radiusInMeters = zone.radius * 1000;
+            {/* Leaflet Map Container */}
+            <div className="map-container">
+                <MapContainer
+                    center={[39.8283, -98.5795]} // Initial center (Continental US)
+                    zoom={4}                     // Initial zoom level
+                    style={{ height: "100%", width: "100%" }} // Ensure map fills container
+                    scrollWheelZoom={true}       // Allow zooming with scroll wheel
+                >
+                    {/* Base Map Tile Layer */}
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        maxZoom={18} // Maximum zoom level for the tile layer
+                    />
 
-              return (
-                  // Using Circle for real-world radius, requires conversion to meters
-                  <CircleMarker // CircleMarker keeps constant screen pixel size, better for many zones
-                      key={`zone-${index}-${zone.name}`}
-                      center={[zone.latitude, zone.longitude]}
-                      radius={8} // Fixed pixel radius for CircleMarker, easier to see
-                      pathOptions={{
-                          color: zoneColor,
-                          fillColor: zoneColor,
-                          fillOpacity: 0.3, // Slightly less opaque
-                          weight: 1
-                      }}
-                  >
-                      <Popup>
-                          ⚠️ <strong>{zone.name || "Unnamed Zone"}</strong>
-                          <br /> Restricted Zone ({zoneType})
-                          <br /> Radius: {zone.radius.toFixed(1)} km
-                      </Popup>
-                  </CircleMarker>
-              );
-          })}
+                    {/* Render Restricted Zone Markers */}
+                    {restrictedZones && restrictedZones.map((zone, index) => {
+                        // Basic validation for zone data
+                        if (!zone || typeof zone.latitude !== 'number' || typeof zone.longitude !== 'number' || typeof zone.radius !== 'number') {
+                            console.warn("Skipping invalid restricted zone object:", zone);
+                            return null; // Skip rendering this zone
+                        }
+                        const zoneType = getZoneType(zone.name);
+                        const zoneColor = zoneColors[zoneType];
+                        // Note: Leaflet's Circle uses radius in meters, CircleMarker uses pixels.
+                        // We use CircleMarker for consistent size regardless of zoom.
+                        // const radiusInMeters = zone.radius * 1000; // Needed for L.Circle
 
-          {/* Render Drone Markers (using the filtered droneData prop) */}
-          {droneData && droneData.map((drone) => {
-              if (!drone || typeof drone.latitude !== 'number' || typeof drone.longitude !== 'number') {
-                  console.warn("Skipping invalid drone object:", drone);
-                  return null;
-              }
-              return (
-                  <Marker
-                      // ****** CHANGE HERE: Use renderKey passed from App.js ******
-                      key={drone.renderKey} // Use the unique key generated in App.js
-                      position={[drone.latitude, drone.longitude]}
-                      icon={getMarkerIcon(drone)} // Use the custom divIcon
-                  >
-                      <Popup>
-                          {/* Use nullish coalescing for safer defaults */}
-                          <strong>{drone.callsign ?? "Unknown Callsign"}</strong>
-                          <br />Lat: {drone.latitude?.toFixed(4) ?? 'N/A'}, Lon: {drone.longitude?.toFixed(4) ?? 'N/A'}
-                          <br />Alt: {drone.altitude?.toFixed(0) ?? 'N/A'} m, Vel: {drone.velocity?.toFixed(1) ?? 'N/A'} km/h
-                          <br />Status: {drone.unauthorized
-                              ? <>❌ Unauthorized {drone.zone ? `(${drone.zone})` : ''}</>
-                              : <>✅ Authorized</>
-                          }
-                      </Popup>
-                  </Marker>
-              );
-          })}
-        </MapContainer>
-      </div> {/* End map-container */}
+                        return (
+                            // Using CircleMarker for fixed pixel radius (easier visibility at different zooms)
+                            <CircleMarker
+                                key={`zone-${index}-${zone.name || index}`} // Unique key for each zone
+                                center={[zone.latitude, zone.longitude]}
+                                radius={8} // Fixed radius in pixels (adjust as needed)
+                                pathOptions={{
+                                    color: zoneColor,       // Outline color
+                                    fillColor: zoneColor,   // Fill color
+                                    fillOpacity: 0.3,       // Fill transparency
+                                    weight: 1               // Outline thickness
+                                }}
+                            >
+                                {/* Popup displayed when clicking the zone marker */}
+                                <Popup>
+                                    ⚠️ <strong>{zone.name || "Unnamed Zone"}</strong>
+                                    <br /> Restricted Zone ({zoneType})
+                                    <br /> Radius: {zone.radius.toFixed(1)} km
+                                </Popup>
+                            </CircleMarker>
+                        );
+                    })}
 
+                    {/* Render Drone Markers */}
+                    {/* Ensure droneData is an array before mapping */}
+                    {Array.isArray(droneData) && droneData.map((drone) => {
+                        // Basic validation for drone data
+                        if (!drone || typeof drone.latitude !== 'number' || typeof drone.longitude !== 'number') {
+                            console.warn("Skipping invalid drone object:", drone);
+                            return null; // Skip rendering this drone marker
+                        }
 
-      {/* Live Detections Modal (Displays data based on the FILTERED drones shown on map) */}
-      {showLiveDetections && (
-        <div className="modal" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-             <button className="close-button" onClick={handleCloseModal}>
-               <FaTimes />
-             </button>
-             <h2 className="neon-title modal-title">📡 Drones Currently Displayed</h2>
-             <p className="modal-last-updated"><FaClock /> Data timestamp: {lastUpdated || "N/A"}</p>
+                        // ***** Add log here to debug individual drone status *****
+                        // console.log('DroneMap rendering marker:', drone.callsign, 'Is Unauthorized:', drone.unauthorized);
 
-             {/* Stats inside modal (Reflects displayed drones only) */}
-             <div className="stats-container modal-stats">
-               <div className="stats-card">
-                 <h3>Displayed</h3>
-                 <p>{modalStats.totalDisplayed}</p>
-               </div>
-               <div className="stats-card unauthorized">
-                 <h3>Unauthorized (Displayed)</h3>
-                 <p>{modalStats.unauthorizedDisplayed}</p>
-               </div>
-             </div>
+                        return (
+                            <Marker
+                                // Use a stable and unique key. `renderKey` should be passed from App.js
+                                // If renderKey isn't available, fallback to callsign, but ensure callsigns are unique
+                                key={drone.renderKey || drone.callsign || `drone-${drone.latitude}-${drone.longitude}`}
+                                position={[drone.latitude, drone.longitude]}
+                                icon={getMarkerIcon(drone)} // Use the custom function to get the divIcon
+                            >
+                                {/* Popup displayed when clicking the drone marker */}
+                                <Popup>
+                                    {/* Use nullish coalescing (??) for safer default values */}
+                                    <strong>{drone.callsign ?? "Unknown Callsign"}</strong>
+                                    <br />Lat: {drone.latitude?.toFixed(4) ?? 'N/A'}, Lon: {drone.longitude?.toFixed(4) ?? 'N/A'}
+                                    <br />Alt: {drone.altitude != null ? `${drone.altitude.toFixed(0)} m` : 'N/A'}
+                                    <br />Vel: {drone.velocity != null ? `${drone.velocity.toFixed(1)} km/h` : 'N/A'}
+                                    <br />Status: {drone.unauthorized
+                                        ? <>❌ Unauthorized {drone.zone ? `(${drone.zone})` : ''}</>
+                                        : <>✅ Authorized</>
+                                    }
+                                </Popup>
+                            </Marker>
+                        );
+                    })}
+                </MapContainer>
+            </div> {/* End map-container */}
 
-             {/* Drone List (Reflects displayed drones only) */}
-             <ul className="modal-drone-list styled-scrollbar"> {/* Added scrollbar class */}
-               {droneData && droneData.length > 0 ? (
-                   droneData.map((drone) => ( // No need for index if using renderKey
-                     <li key={drone.renderKey} className={drone.unauthorized ? "unauthorized-drone" : "authorized-drone"}>
-                       <strong>{drone.callsign ?? "Unknown"}</strong>
-                       <span> - Alt: {drone.altitude?.toFixed(0) ?? 'N/A'}m</span>
-                       <span>, Vel: {drone.velocity?.toFixed(1) ?? 'N/A'}km/h</span>
-                       <span> - {drone.unauthorized ? `❌ Unauth ${drone.zone ? `(${drone.zone})` : ''}` : "✅ Auth"}</span>
-                     </li>
-                   ))
-                 ) : (
-                   <li className="no-drones-message">No drones currently displayed on the map.</li>
-                 )
-               }
-             </ul>
-          </div> {/* End modal-content */}
-        </div> // End modal
-      )}
+            {/* Live Detections Modal */}
+            {/* This modal shows details about the drones currently displayed on the map */}
+            {showLiveDetections && (
+                // Overlay div to close modal on background click
+                <div className="modal" onClick={handleCloseModal}>
+                    {/* Modal content area (prevents click propagation) */}
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                         {/* Close button */}
+                         <button className="close-button" onClick={handleCloseModal}>
+                           <FaTimes />
+                         </button>
+                         <h2 className="neon-title modal-title">📡 Drones Currently Displayed</h2>
+                         <p className="modal-last-updated"><FaClock /> Data timestamp: {lastUpdated || "N/A"}</p>
 
-    </div> // End map-section-container
-  );
+                         {/* Statistics based on displayed drones */}
+                         <div className="stats-container modal-stats">
+                           <div className="stats-card">
+                             <h3>Displayed</h3>
+                             <p>{modalStats.totalDisplayed}</p>
+                           </div>
+                           <div className="stats-card unauthorized">
+                             <h3>Unauthorized (Displayed)</h3>
+                             <p>{modalStats.unauthorizedDisplayed}</p>
+                           </div>
+                         </div>
+
+                         {/* List of displayed drones */}
+                         {/* Add a scrollable container */}
+                         <div className="modal-drone-list-container styled-scrollbar">
+                             <ul className="modal-drone-list">
+                                 {/* Check if droneData exists and has items */}
+                                 {Array.isArray(droneData) && droneData.length > 0 ? (
+                                     droneData.map((drone) => (
+                                         // Use a stable key for list items
+                                         <li key={drone.renderKey || drone.callsign || `modal-${drone.latitude}-${drone.longitude}`}
+                                             className={drone.unauthorized ? "unauthorized-drone" : "authorized-drone"}>
+                                             <strong>{drone.callsign ?? "Unknown"}</strong>
+                                             <span> - Alt: {drone.altitude != null ? `${drone.altitude.toFixed(0)} m` : 'N/A'}</span>
+                                             <span>, Vel: {drone.velocity != null ? `${drone.velocity.toFixed(1)} km/h` : 'N/A'}</span>
+                                             <span> - {drone.unauthorized ? `❌ Unauth ${drone.zone ? `(${drone.zone})` : ''}` : "✅ Auth"}</span>
+                                         </li>
+                                     ))
+                                 ) : (
+                                     // Message shown if no drones are displayed
+                                     <li className="no-drones-message">No drones currently displayed on the map.</li>
+                                 )}
+                             </ul>
+                         </div> {/* End scrollable container */}
+                    </div> {/* End modal-content */}
+                </div> // End modal
+            )}
+
+        </div> // End map-section-container (root element)
+    );
 };
 
 export default DroneMap;
